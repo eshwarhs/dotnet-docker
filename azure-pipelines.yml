@@ -62,4 +62,4 @@ stages:
     pool:
       vmImage: ubuntu-latest
     steps:
-      - script: echo "This is a pre-build stage. You can perform any pre-build tasks here."
+      - script: echo "This is a post-build stage. You can perform any post-build tasks here."
