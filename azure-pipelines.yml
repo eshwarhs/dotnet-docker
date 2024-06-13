@@ -1,19 +1,24 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
 trigger:
 - main
 
-pool: my-pc
-
 resources:
 - repo: self
-
+  
 variables:
-  tag: '$(Build.BuildId)'
+  - group: dotnet-docker
 
 stages:
+- stage: PreBuild
+  displayName: Pre-Build Stage
+  jobs:
+  - job: PreBuild
+    displayName: Pre-Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: echo "This is a pre-build stage. You can perform any pre-build tasks here."
+      displayName: 'Run a script'
+
 - stage: Build
   displayName: Build image
   jobs:
@@ -28,4 +33,33 @@ stages:
         command: build
         dockerfile: '$(Build.SourcesDirectory)/samples/aspnetapp/Dockerfile'
         tags: |
-          $(tag)
+          $(Build.BuildId)
+
+- stage: Deploy
+  displayName: Deploy image to Docker Hub
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Docker@2
+      displayName: Push an image
+      inputs:
+        command: push
+        containerRegistry: $(dockerRegistryServiceConnection)
+        repository: 'talha-islam/dotnet-docker'
+        tags: |
+          $(Build.BuildId)
+
+- stage: PostDeploy
+  displayName: Post-Deploy Stage
+  dependsOn: Deploy
+  condition: succeeded()
+  jobs:
+  - job: PostDeploy
+    displayName: Post-Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - script: echo "This is a pre-build stage. You can perform any pre-build tasks here."
