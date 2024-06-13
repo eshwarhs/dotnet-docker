@@ -5,6 +5,8 @@
 trigger:
 - main
 
+pool: my-pc
+
 resources:
 - repo: self
 
